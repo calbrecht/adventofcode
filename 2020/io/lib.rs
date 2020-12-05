@@ -44,3 +44,19 @@ pub fn fetch_input_text (client: &Client, day: &str) -> Result<String, String> {
         Ok(text) => Ok(text)
     }
 }
+
+fn post (client: &Client, url: &str, params: &Vec<(&str, &str)>) -> reqwest::Result<Response> {
+    client.post(url).form(params).send()
+}
+
+pub fn post_result_text (client: &Client, day: &str, lvl: &str, result: &str) -> Result<String, String> {
+    let path: String = ["/day/", day, "/answer"].concat();
+    let url: String = compose_url(path.as_str());
+    let params: Vec<(&str, &str)> = vec![("level", lvl), ("answer", result)];
+    let response: Response = post(client, url.as_str(), &params).unwrap();
+
+    match response.text() {
+        Err(err) => Err(format!("{}", err)),
+        Ok(text) => Ok(text)
+    }
+}
