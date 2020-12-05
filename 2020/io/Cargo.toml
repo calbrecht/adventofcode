@@ -1,0 +1,12 @@
+[package]
+name = "aoc_io"
+version = "0.1.0"
+authors = ["Christian Albrecht <christian.albrecht@mayflower.de>"]
+edition = "2018"
+
+[dependencies]
+reqwest = { version = "0.10", features = [ "blocking" ] }
+dotenv = { version = "0.15.0" }
+
+[lib]
+path = "lib.rs"
