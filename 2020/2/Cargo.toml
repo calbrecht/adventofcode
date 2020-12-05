@@ -1,0 +1,12 @@
+[package]
+name = "aoc_2020_2"
+version = "0.1.0"
+authors = ["Christian Albrecht <christian.albrecht@mayflower.de>"]
+edition = "2018"
+
+[dependencies]
+aoc_io = { version = "0.1.0", path = "../io" }
+
+[[bin]]
+name = "aoc_2020_2"
+path = "main.rs"
