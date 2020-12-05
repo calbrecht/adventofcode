@@ -8,35 +8,29 @@ fn main() -> Result<(), ()> {
 
     println!("input: {:#?}", input);
 
-    let data: Vec<(usize, usize, usize, char, char, char)> = input.split_terminator("\n")
+    let data: Vec<(bool, bool)> = input.split_terminator("\n")
         .map(|x: &str| x.splitn(5, |c| c == '-' || c == ' ' || c == ':').collect())
         .map(|x: Vec<&str>|
              (x[0].parse::<usize>().unwrap(),
               x[1].parse::<usize>().unwrap(),
               x[4].matches(x[2]).collect::<Vec<&str>>().len(),
               x[2].chars().nth(0).unwrap(),
-              x[4]))
-        .map(|x: (usize, usize, usize, char, &str)|
-             (x.0, x.1, x.2, x.3,
-              x.4.chars().nth(x.0 -1).unwrap_or('?'),
-              x.4.chars().nth(x.1 -1).unwrap_or('?')))
+              x[4].chars().collect()))
+        .map(|x: (usize, usize, usize, char, Vec<char>)|
+             (x.0 <= x.2 && x.1 >= x.2,
+              (x.3 == x.4[x.0 -1]) != (x.3 == x.4[x.1 -1])))
         .collect();
 
     println!("data: {:#?}", data);
 
     let lvl1: usize = data.iter()
-        .map(|x: &(usize, usize, usize, char, char, char)|
-             x.0 <= x.2 && x.1 >= x.2)
-        .filter(|x: &bool| *x)
-        .collect::<Vec<bool>>()
+        .filter(&|x: &&(bool, bool)| x.0)
+        .collect::<Vec<&(bool, bool)>>()
         .len();
 
     let lvl2: usize = data.iter()
-        .map(|x: &(usize, usize, usize, char, char, char)|
-             x.3 == x.4 && x.3 != x.5 ||
-             x.3 != x.4 && x.3 == x.5)
-        .filter(|x: &bool| *x)
-        .collect::<Vec<bool>>()
+        .filter(&|x: &&(bool, bool)| x.1)
+        .collect::<Vec<&(bool, bool)>>()
         .len();
 
     println!("level 1: {:#?}", lvl1);
