@@ -18,10 +18,10 @@ fn main() -> Result<(), ()> {
     aoc_io::init_env();
     let client = aoc_io::build_client().unwrap();
     let input: String = aoc_io::fetch_input_text(&client, day).unwrap();
-    println!("input: {:#?}", input);
+    //println!("input: {:#?}", input);
 
     let data: Vec<&str> = input.split_terminator("\n").collect();
-    println!("data: {:#?}", data);
+    //println!("data: {:#?}", data);
 
     let mut lvl1 = data.iter()
         .map(|s: &&str| seat((0, 127), s))
@@ -30,8 +30,15 @@ fn main() -> Result<(), ()> {
 
     lvl1.sort();
 
-    println!("level 1: {:#?}", lvl1);
-    //println!("level 2: {:#?}", lvl2);
+    let lvl2: i16 = lvl1.iter()
+        .zip(*lvl1.first().unwrap()..=*lvl1.last().unwrap())
+        .filter(|(a,b)| *a == b)
+        .last()
+        .unwrap()
+        .0 + 1;
+
+    println!("level 1: {:#?}", lvl1.last().unwrap());
+    println!("level 2: {:#?}", lvl2);
 
     //println!("{:#?}", aoc_io::post_result_text(&client, day, "1", lvl1.to_string().as_str()));
     //println!("{:#?}", aoc_io::post_result_text(&client, day, "2", lvl2.to_string().as_str()));
