@@ -61,3 +61,14 @@ fn test_count_answers() {
     assert_eq!(count_answers_lvl1(&data), 11);
     assert_eq!(count_answers_lvl2(&data), 6);
 }
+
+#[test]
+fn test_count_chars() {
+    let count = count_chars(&String::from("zazaazzrrrrrzr"));
+    assert_eq!(count.len(), 3);
+    assert!(count.contains(&('a', 3)));
+    assert!(count.contains(&('r', 6)));
+    assert!(count.contains(&('z', 5)));
+
+    assert_eq!(count_chars(&String::from("")).len(), 0);
+}
