@@ -1,11 +1,10 @@
 extern crate aoc_io;
 
+use std::collections::HashSet;
+
 fn count_chars(s: &String) -> Vec<(char, usize)> {
-    let mut chars: Vec<char> = s.chars().collect();
-    chars.sort();
-    chars.dedup();
-    chars.iter()
-        .map(|c| (c.clone(), s.matches(|a| a == *c).count()))
+    s.chars().collect::<HashSet<char>>().iter()
+        .map(|c| (c.clone(), s.matches(*c).count()))
         .collect()
 }
 
