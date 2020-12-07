@@ -2,6 +2,7 @@ use dotenv::from_filename;
 use reqwest::{header::{COOKIE, HeaderMap, HeaderValue},
               blocking::{Response, Client, ClientBuilder}};
 use std::env;
+use std::fs;
 
 pub fn init_env () {
     let _ = from_filename(".env.local");
@@ -14,8 +15,9 @@ pub fn init_env () {
 }
 
 fn compose_url (path: &str) -> String {
-    let base_url: String = env::var("BASE_URL").unwrap();
-    let url: String = base_url + path;
+    let year = env::var("YEAR").unwrap();
+    let base_url = env::var("BASE_URL").unwrap();
+    let url = [base_url, year, path.to_string()].join("/");
 
     url
 }
@@ -35,14 +37,26 @@ fn get (client: &Client, url: &str) -> reqwest::Result<Response> {
 }
 
 pub fn fetch_input_text (client: &Client, day: &str) -> Result<String, String> {
-    let path: String = ["/day/", day, "/input"].concat();
-    let url: String = compose_url(path.as_str());
-    let response: Response = get(client, url.as_str()).unwrap();
+    let dir = env::var("CARGO_MANIFEST_DIR").unwrap();
+    let file = [dir.as_str(), "input.txt"].join("/");
 
-    match response.text() {
-        Err(err) => Err(format!("{}", err)),
-        Ok(text) => Ok(text)
+    match fs::read_to_string(&file) {
+        Ok(text) => Ok(text),
+        Err(_err) => {
+            let path: String = ["day", day, "input"].join("/");
+            let url: String = compose_url(path.as_str());
+            let response: Response = get(client, url.as_str()).unwrap();
+
+            match response.text() {
+                Err(err) => Err(format!("{}", err)),
+                Ok(text) => {
+                    let _ = fs::write(&file, &text);
+                    Ok(text)
+                }
+            }
+        }
     }
+
 }
 
 fn post (client: &Client, url: &str, params: &Vec<(&str, &str)>) -> reqwest::Result<Response> {
@@ -50,8 +64,8 @@ fn post (client: &Client, url: &str, params: &Vec<(&str, &str)>) -> reqwest::Res
 }
 
 pub fn post_result_text (client: &Client, day: &str, lvl: &str, result: &str) -> Result<String, String> {
-    let path: String = ["/day/", day, "/answer"].concat();
-    let url: String = compose_url(path.as_str());
+    let path = ["day", day, "answer"].join("/");
+    let url = compose_url(path.as_str());
     let params: Vec<(&str, &str)> = vec![("level", lvl), ("answer", result)];
     let response: Response = post(client, url.as_str(), &params).unwrap();
 
