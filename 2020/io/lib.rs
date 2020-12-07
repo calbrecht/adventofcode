@@ -36,25 +36,27 @@ fn get (client: &Client, url: &str) -> reqwest::Result<Response> {
     client.get(url).send()
 }
 
+fn fetch_input_cache_miss (client: &Client, file: &str, day: &str) -> Result<String, String> {
+    let path: String = ["day", day, "input"].join("/");
+    let url: String = compose_url(path.as_str());
+    let response: Response = get(client, url.as_str()).unwrap();
+
+    match response.text() {
+        Err(err) => Err(format!("{}", err)),
+        Ok(text) => {
+            let _ = fs::write(&file, &text);
+            Ok(text)
+        }
+    }
+}
+
 pub fn fetch_input_text (client: &Client, day: &str) -> Result<String, String> {
     let dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     let file = [dir.as_str(), "input.txt"].join("/");
 
     match fs::read_to_string(&file) {
         Ok(text) => Ok(text),
-        Err(_err) => {
-            let path: String = ["day", day, "input"].join("/");
-            let url: String = compose_url(path.as_str());
-            let response: Response = get(client, url.as_str()).unwrap();
-
-            match response.text() {
-                Err(err) => Err(format!("{}", err)),
-                Ok(text) => {
-                    let _ = fs::write(&file, &text);
-                    Ok(text)
-                }
-            }
-        }
+        Err(_err) => fetch_input_cache_miss(client, &file, day)
     }
 
 }
