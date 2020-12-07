@@ -1,15 +1,45 @@
 extern crate aoc_io;
 
-struct InnerBag {
-    style: String,
-    count: usize,
+use std::iter::FromIterator;
+
+struct Rule {
+    bag: String,
+    contents: String,
 }
 
-impl From<&str> for InnerBag {
+impl<'a> FromIterator<&'a str> for Rule {
+    fn from_iter<I: IntoIterator<Item = &'a str>>(iter: I) -> Self {
+        let mut iterator = iter.into_iter();
+
+        Self {
+            bag: iterator.next().unwrap_or("").to_string(),
+            contents: iterator.next().unwrap_or("").to_string(),
+        }
+    }
+}
+
+impl From<&str> for Rule {
+    fn from(s: &str) -> Self {
+        s.split(" bags contain ").collect::<Rule>()
+    }
+}
+
+impl From<&&str> for Rule {
+    fn from(s: &&str) -> Self {
+        Rule::from(*s)
+    }
+}
+
+struct Bags {
+    style: String,
+    _count: usize,
+}
+
+impl From<&str> for Bags {
     fn from(s: &str) -> Self {
         let sentence = s.trim().replace(" bags", "").replace(" bag", "");
 
-        let (count, style) = match sentence.starts_with(|c: char| c.is_ascii_digit()) {
+        let (_count, style) = match sentence.starts_with(|c: char| c.is_ascii_digit()) {
             true => {
                 let p: Vec<&str> = sentence.split(" ").collect();
                 (p[0].parse::<usize>().unwrap(), p[1..].join(" "))
@@ -17,40 +47,43 @@ impl From<&str> for InnerBag {
             false => (0, sentence.to_string())
         };
 
-        InnerBag {
+        Bags {
             style,
-            count
+            _count
+        }
+    }
+}
+
+struct Content {
+    bags: Vec<Bags>
+}
+
+impl From<Rule> for Content {
+    fn from(rule: Rule) -> Self {
+        Self {
+            bags: rule.contents.split_terminator(&['.', ','][..]).map(Bags::from).collect()
         }
     }
 }
 
 struct Bag {
     style: String,
-    holds: Vec<InnerBag>,
+    content: Content,
 }
 
 impl Bag {
     fn can_hold(&self, style: &str) -> bool {
-        self.holds.iter().any(|inner| inner.style == style)
+        self.content.bags.iter().any(|inner| inner.style == style)
     }
 }
 
-impl From<&&str> for Bag {
-    fn from(s: &&str) -> Self {
-        let m: Vec<&str> = s.split(" bags contain ").collect();
-        let holds: Vec<InnerBag> = m[1].split_terminator(&['.', ','][..])
-            .map(InnerBag::from)
-            .collect();
-
-        Bag {
-            style: String::from(m[0]),
-            holds
+impl From<Rule> for Bag {
+    fn from(rule: Rule) -> Self {
+        Self {
+            style: rule.bag.clone(),
+            content: Content::from(rule)
         }
     }
-}
-
-fn parse_lvl1(v: &[&str]) -> Vec<Bag> {
-    v.iter().map(Bag::from).collect()
 }
 
 fn count_bags_lvl1<'a >(bags: &'a [Bag], styles: &[&'a str]) -> Vec<&'a str> {
@@ -83,8 +116,9 @@ fn main() -> Result<(), ()> {
     let data: &[&str] = &input.split_terminator("\n").collect::<Vec<&str>>()[..];
     //println!("data: {:#?}", data);
 
-    let lvl1_bags = parse_lvl1(&data);
-    let lvl1 = count_bags_lvl1(&lvl1_bags, &["shiny gold"]);
+    let bags: Vec<Bag> = data.iter().map(Rule::from).map(Bag::from).collect();
+
+    let lvl1 = count_bags_lvl1(&bags, &["shiny gold"]);
 
     println!("level 1: {:#?}", lvl1.len());
     //println!("level 2: {:#?}", lvl2);
