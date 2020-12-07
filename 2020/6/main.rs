@@ -2,22 +2,22 @@ extern crate aoc_io;
 
 use std::collections::HashSet;
 
-fn count_chars(s: &String) -> Vec<(char, usize)> {
+fn count_chars(s: &str) -> Vec<(char, usize)> {
     s.chars().collect::<HashSet<char>>().iter()
         .map(|c| (c.clone(), s.matches(*c).count()))
         .collect()
 }
 
-fn count_answers_lvl1(v: &Vec<&str>) -> usize {
+fn count_answers_lvl1(v: &[&str]) -> usize {
     v.iter()
         .map(|s| s.replace("\n", ""))
         .map(|s| s.chars().collect::<Vec<char>>())
         .map(|mut s| { s.sort(); s.dedup(); s.len()})
         //.inspect(|x| println!("{:#?}", x))
-        .sum::<usize>()
+        .sum()
 }
 
-fn count_answers_lvl2(v: &Vec<&str>) -> usize {
+fn count_answers_lvl2(v: &[&str]) -> usize {
     v.iter()
         .map(|s| s.split_terminator("\n").collect::<Vec<&str>>())
         .map(|s| (s.len(), s.join("")))
@@ -50,7 +50,7 @@ fn main() -> Result<(), ()> {
 
 #[test]
 fn test_count_answers() {
-    let data = vec![
+    let data = &[
         "abc",
         "a\nb\nc",
         "ab\nac",
@@ -58,17 +58,17 @@ fn test_count_answers() {
         "b\n",
     ];
 
-    assert_eq!(count_answers_lvl1(&data), 11);
-    assert_eq!(count_answers_lvl2(&data), 6);
+    assert_eq!(count_answers_lvl1(data), 11);
+    assert_eq!(count_answers_lvl2(data), 6);
 }
 
 #[test]
 fn test_count_chars() {
-    let count = count_chars(&String::from("zazaazzrrrrrzr"));
+    let count = count_chars("zazaazzrrrrrzr");
     assert_eq!(count.len(), 3);
     assert!(count.contains(&('a', 3)));
     assert!(count.contains(&('r', 6)));
     assert!(count.contains(&('z', 5)));
 
-    assert_eq!(count_chars(&String::from("")).len(), 0);
+    assert_eq!(count_chars("").len(), 0);
 }
