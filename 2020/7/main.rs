@@ -30,7 +30,7 @@ struct Bag {
 }
 
 impl Bag {
-    fn can_hold(&self, style: String) -> bool {
+    fn can_hold(&self, style: &str) -> bool {
         self.holds.iter().any(|inner| inner.style == style)
     }
 }
@@ -56,7 +56,7 @@ fn parse_lvl1(v: &[&str]) -> Vec<Bag> {
 fn count_bags_lvl1<'a >(bags: &'a [Bag], styles: &[&'a str]) -> Vec<&'a str> {
 
     let found: Vec<&str> = bags.iter()
-        .filter(|bag| styles.iter().any(|style| bag.can_hold(style.to_string())))
+        .filter(|bag| styles.iter().any(|style| bag.can_hold(style)))
         .map(|bag| bag.style.as_str())
         .collect();
 
