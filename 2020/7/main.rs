@@ -1,28 +1,45 @@
 extern crate aoc_io;
 
+struct InnerBag {
+    style: String,
+    count: usize,
+}
+
+impl From<&str> for InnerBag {
+    fn from(s: &str) -> Self {
+        let sentence = s.trim().replace(" bags", "").replace(" bag", "");
+
+        let (count, style) = match sentence.starts_with(|c: char| c.is_ascii_digit()) {
+            true => {
+                let p: Vec<&str> = sentence.split(" ").collect();
+                (p[0].parse::<usize>().unwrap(), p[1..].join(" "))
+            },
+            false => (0, sentence.to_string())
+        };
+
+        InnerBag {
+            style,
+            count
+        }
+    }
+}
+
 struct Bag {
     style: String,
-    holds: Vec<(usize, String)>,
+    holds: Vec<InnerBag>,
 }
 
 impl Bag {
     fn can_hold(&self, style: String) -> bool {
-        self.holds.iter().any(|bag| bag.1 == style)
+        self.holds.iter().any(|inner| inner.style == style)
     }
 }
 
 impl From<&&str> for Bag {
     fn from(s: &&str) -> Self {
         let m: Vec<&str> = s.split(" bags contain ").collect();
-        let holds: Vec<(usize, String)> = m[1].split_terminator(&['.', ','][..])
-            .map(|s| s.trim().replace(" bags", "").replace(" bag", ""))
-            .map(|s| match s.starts_with(|c: char| c.is_ascii_digit()) {
-                true => {
-                    let p: Vec<&str> = s.split(" ").collect();
-                    (p[0].parse::<usize>().unwrap(), p[1..].join(" "))
-                },
-                false => (0, s.to_string())
-            })
+        let holds: Vec<InnerBag> = m[1].split_terminator(&['.', ','][..])
+            .map(InnerBag::from)
             .collect();
 
         Bag {
