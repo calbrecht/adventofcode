@@ -61,15 +61,11 @@ impl From<&str> for Bags {
     }
 }
 
-struct Content {
-    bags: Vec<Bags>
-}
+type Content = Vec<Bags>;
 
 impl From<Rule> for Content {
     fn from(rule: Rule) -> Self {
-        Self {
-            bags: rule.contents.split_terminator(&['.', ','][..]).map(Bags::from).collect()
-        }
+        rule.contents.split_terminator(&['.', ','][..]).map(Bags::from).collect()
     }
 }
 
@@ -80,7 +76,7 @@ struct Bag {
 
 impl Bag {
     fn can_hold(&self, style: &str) -> bool {
-        self.content.bags.iter().any(|inner| inner.style == style)
+        self.content.iter().any(|inner| inner.style == style)
     }
 }
 
