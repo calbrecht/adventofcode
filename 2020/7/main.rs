@@ -11,9 +11,16 @@ impl<'a> FromIterator<&'a str> for Rule {
     fn from_iter<I: IntoIterator<Item = &'a str>>(iter: I) -> Self {
         let mut iterator = iter.into_iter();
 
-        Self {
-            bag: iterator.next().unwrap_or("").to_string(),
-            contents: iterator.next().unwrap_or("").to_string(),
+        let bag = iterator.next();
+        let contents = iterator.next();
+
+        match (bag, contents) {
+            (Some(a), Some(b)) =>
+                Self {
+                    bag: a.to_string(),
+                    contents: b.to_string()
+                },
+            _ => panic!("Error creating Rule from &str iterator.")
         }
     }
 }
