@@ -36,14 +36,14 @@ impl From<&&str> for Rule {
 
 struct Bags {
     style: String,
-    _count: usize,
+    count: usize,
 }
 
 impl From<&str> for Bags {
     fn from(s: &str) -> Self {
         let sentence = s.trim().replace(" bags", "").replace(" bag", "");
 
-        let (_count, style) = match sentence.starts_with(|c: char| c.is_ascii_digit()) {
+        let (count, style) = match sentence.starts_with(|c: char| c.is_ascii_digit()) {
             true => {
                 let p: Vec<&str> = sentence.split(" ").collect();
                 (p[0].parse::<usize>().unwrap(), p[1..].join(" "))
@@ -53,7 +53,7 @@ impl From<&str> for Bags {
 
         Bags {
             style,
-            _count
+            count
         }
     }
 }
@@ -86,7 +86,7 @@ impl From<Rule> for Bag {
     }
 }
 
-fn count_bags_lvl1<'a >(bags: &'a [Bag], styles: &[&'a str]) -> Vec<&'a str> {
+fn bags_lvl1<'a >(bags: &'a [Bag], styles: &[&'a str]) -> Vec<&'a str> {
 
     let found: Vec<&str> = bags.iter()
         .filter(|bag| styles.iter().any(|style| bag.can_hold(style)))
@@ -98,12 +98,26 @@ fn count_bags_lvl1<'a >(bags: &'a [Bag], styles: &[&'a str]) -> Vec<&'a str> {
     match found.len() {
         0 => all,
         _ => {
-            all.append(&mut count_bags_lvl1(&bags, &found[..]));
+            all.append(&mut bags_lvl1(&bags, &found[..]));
             all.sort();
             all.dedup();
             all
         }
     }
+}
+
+fn bags_lvl2<'a >(bags: &'a [Bag], style: &'a str) -> usize {
+
+    let bag: Option<&Bag> = bags.iter().find(|&bag| bag.style == style.to_string());
+
+    match bag {
+        Some(bag) => bag.content.iter()
+            .fold(1, |acc, inner| {
+                acc + inner.count * bags_lvl2(bags, inner.style.as_str())
+            }),
+        None => 0,
+    }
+
 }
 
 fn main() -> Result<(), ()> {
@@ -118,10 +132,11 @@ fn main() -> Result<(), ()> {
 
     let bags: Vec<Bag> = data.iter().map(Rule::from).map(Bag::from).collect();
 
-    let lvl1 = count_bags_lvl1(&bags, &["shiny gold"]);
+    let lvl1 = bags_lvl1(&bags, &["shiny gold"]);
+    let lvl2 = bags_lvl2(&bags, "shiny gold");
 
     println!("level 1: {:#?}", lvl1.len());
-    //println!("level 2: {:#?}", lvl2);
+    println!("level 2: {:#?}", lvl2 - 1);
 
     //println!("{:#?}", aoc_io::post_result_text(&client, day, "1", lvl1.to_string().as_str()));
     //println!("{:#?}", aoc_io::post_result_text(&client, day, "2", lvl2.to_string().as_str()));
