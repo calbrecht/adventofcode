@@ -11,14 +11,11 @@ impl<'a> FromIterator<&'a str> for Rule {
     fn from_iter<I: IntoIterator<Item = &'a str>>(iter: I) -> Self {
         let mut iterator = iter.into_iter();
 
-        let bag = iterator.next();
-        let contents = iterator.next();
-
-        match (bag, contents) {
-            (Some(a), Some(b)) =>
+        match (iterator.next(), iterator.next()) {
+            (Some(bag), Some(contents)) =>
                 Self {
-                    bag: a.to_string(),
-                    contents: b.to_string()
+                    bag: bag.to_string(),
+                    contents: contents.to_string()
                 },
             _ => panic!("Error creating Rule from &str iterator.")
         }
@@ -27,7 +24,7 @@ impl<'a> FromIterator<&'a str> for Rule {
 
 impl From<&str> for Rule {
     fn from(s: &str) -> Self {
-        s.split(" bags contain ").collect::<Rule>()
+        s.split(" bags contain ").collect()
     }
 }
 
